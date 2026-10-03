@@ -465,9 +465,13 @@ function formatDate(date){
 }
 function displayCategories(){
   const categories = ["All", ...new Set(items.map(i=>i.category))];
-  document.getElementById("categories").innerHTML = categories.map(c =>
-    `<button class="category ${selectedCategory===c?"active":""}" onclick="selectCategory(${JSON.stringify(c)})">${escapeHTML(c)}</button>`
+  const container = document.getElementById("categories");
+  container.innerHTML = categories.map(c =>
+    `<button class="category ${selectedCategory===c?"active":""}" data-category="${escapeHTML(c)}">${escapeHTML(c)}</button>`
   ).join("");
+  container.querySelectorAll("[data-category]").forEach(button=>{
+    button.addEventListener("click",()=>selectCategory(button.dataset.category));
+  });
 }
 function displayStats(){
   document.getElementById("totalCount").textContent = items.length;

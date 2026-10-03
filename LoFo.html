@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#5b4de8">
+<title>LoFo | Lost & Found</title>
+<style>
+:root{
+  --primary:#5b4de8;--primary2:#7c3aed;--bg:#f6f7fb;--card:#fff;
+  --text:#20243a;--muted:#707080;--border:#e5e5ef;--success:#16a34a;
+  --danger:#dc2626;--shadow:0 8px 25px rgba(31,35,60,.09)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+header{
+  background:linear-gradient(135deg,#4f46e5,#7c3aed);
+  color:#fff;padding:28px 6%;border-radius:0 0 34px 34px;
+  box-shadow:0 10px 35px rgba(79,70,229,.25)
+}
+.header-content,main{max-width:1150px;margin:auto}
+.top-bar{display:flex;justify-content:space-between;align-items:center;gap:20px}
+.logo h1{margin:0;font-size:31px;font-weight:850}
+.logo p{margin:5px 0 0;opacity:.88;font-size:14px}
+.header-actions{display:flex;gap:10px}
+.icon-btn,.add-button{
+  width:48px;height:48px;border:0;border-radius:15px;background:#fff;color:var(--primary);
+  font-size:22px;font-weight:800;box-shadow:0 6px 20px rgba(0,0,0,.14);transition:.2s
+}
+.icon-btn:hover,.add-button:hover{transform:translateY(-2px) scale(1.03)}
+.search-area{position:relative;margin-top:25px}
+.search-area input{
+  width:100%;padding:17px 58px 17px 20px;border:0;outline:0;border-radius:17px;
+  font-size:16px;box-shadow:0 6px 22px rgba(0,0,0,.12)
+}
+.clear-search{
+  position:absolute;right:10px;top:9px;width:38px;height:38px;border:0;border-radius:50%;
+  background:#eeeef5;color:#555;font-size:22px;display:none
+}
+main{padding:28px 20px 70px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.action-btn{
+  border:0;background:#fff;color:var(--primary);padding:12px 17px;border-radius:13px;
+  font-weight:750;box-shadow:var(--shadow);transition:.2s
+}
+.action-btn:hover{transform:translateY(-2px);background:#f4f2ff}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.stat{background:#fff;border-radius:15px;padding:12px 16px;box-shadow:var(--shadow);min-width:105px}
+.stat strong{display:block;font-size:20px}.stat span{font-size:12px;color:var(--muted)}
+.category-container{display:flex;gap:9px;overflow-x:auto;padding:3px 2px 15px;scrollbar-width:thin}
+.category{
+  border:1px solid var(--border);background:#fff;color:#555;padding:9px 16px;
+  border-radius:50px;white-space:nowrap;transition:.2s
+}
+.category:hover{border-color:var(--primary);color:var(--primary)}
+.category.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.section-heading{display:flex;justify-content:space-between;align-items:center;margin:8px 0 17px}
+.section-heading h2{margin:0;font-size:23px}.section-heading span{font-size:13px;color:var(--muted)}
+.items-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:20px}
+.item-card{
+  background:var(--card);border-radius:21px;overflow:hidden;box-shadow:var(--shadow);
+  transition:.25s;position:relative
+}
+.item-card:hover{transform:translateY(-5px);box-shadow:0 14px 32px rgba(31,35,60,.14)}
+.item-photo{height:210px;background:#eeeaff;position:relative;overflow:hidden}
+.item-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.status{
+  position:absolute;top:12px;left:12px;padding:6px 10px;border-radius:30px;
+  color:#fff;font-size:11px;font-weight:800;backdrop-filter:blur(5px)
+}
+.status.lost{background:#dc2626dd}.status.found{background:#16a34add}
+.card-menu{position:absolute;right:10px;top:10px;display:flex;gap:5px}
+.card-menu button{
+  width:34px;height:34px;border:0;border-radius:10px;background:#ffffffe8;color:#444;
+  box-shadow:0 3px 10px #0002
+}
+.item-details{padding:17px}
+.item-details h3{margin:0 0 10px;font-size:19px}
+.item-info{color:var(--muted);font-size:13px;line-height:1.8}
+.date{margin-top:10px;display:inline-block;background:#f0eeff;color:var(--primary);padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700}
+.card-actions{display:flex;gap:8px;margin-top:14px}
+.card-actions button{flex:1;border:0;border-radius:10px;padding:9px;font-weight:700}
+.found-btn{background:#eaf8ee;color:var(--success)}.delete-btn{background:#fff0f0;color:var(--danger)}
+.empty-message{text-align:center;padding:55px 20px;color:#777;grid-column:1/-1;background:#fff;border-radius:20px;box-shadow:var(--shadow)}
+.modal-background{
+  position:fixed;inset:0;background:rgba(18,20,35,.65);display:none;align-items:center;
+  justify-content:center;padding:18px;z-index:1000
+}
+.modal{
+  width:min(560px,100%);background:#fff;border-radius:25px;padding:25px;max-height:92vh;
+  overflow-y:auto;box-shadow:0 25px 70px #0004
+}
+.modal-title{display:flex;justify-content:space-between;align-items:center}
+.modal-title h2{margin:0}.close-button{
+  border:0;background:#f0f0f5;width:38px;height:38px;border-radius:50%;font-size:20px
+}
+.form-label{display:block;margin:16px 0 7px;font-size:13px;font-weight:750}
+.form-input,.form-select{
+  width:100%;padding:13px;border:1px solid #dddde7;border-radius:12px;background:#fafaff;
+  outline:0;font-size:15px
+}
+.form-input:focus,.form-select:focus{border-color:#6c5ce7;box-shadow:0 0 0 3px #6c5ce718}
+.two-columns{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.photo-upload{
+  border:2px dashed #c8c2ff;background:#faf9ff;border-radius:15px;padding:20px;
+  text-align:center;color:var(--primary);cursor:pointer;display:block
+}
+.photo-upload:hover{background:#f2f0ff}.photo-upload input{display:none}
+.preview-image{width:100%;height:180px;object-fit:cover;border-radius:15px;margin-top:10px;display:none}
+.form-buttons{display:flex;gap:12px;margin-top:22px}.form-buttons button{
+  flex:1;padding:14px;border:0;border-radius:13px;font-weight:750
+}
+.cancel-button{background:#eeeeF3;color:#555}.submit-button{background:var(--primary);color:#fff}
+.submit-button:hover{background:#493bd0}
+.camera-message{background:#f0eeff;color:#4e4590;padding:15px;border-radius:15px;line-height:1.6;margin:15px 0}
+#cameraVideo{width:100%;max-height:360px;background:#111;border-radius:18px}
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);
+  background:#20243a;color:#fff;padding:13px 18px;border-radius:13px;opacity:0;
+  pointer-events:none;transition:.25s;z-index:2000;box-shadow:0 10px 30px #0003
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.dark{--bg:#11131c;--card:#1b1e2a;--text:#f2f3f8;--muted:#a8acbb;--border:#303444}
+.dark .form-input,.dark .form-select,.dark .photo-upload{background:#151823;color:#eee;border-color:#35394b}
+.dark .action-btn,.dark .category,.dark .stat,.dark .empty-message{background:#1b1e2a;color:var(--text)}
+.dark .category{border-color:#35394b}.dark .cancel-button{background:#303444;color:#ddd}
+@media(max-width:600px){
+  header{padding:23px 5%;border-radius:0 0 26px 26px}
+  .logo h1{font-size:26px}.toolbar{flex-direction:column;align-items:stretch}
+  .action-btn{width:100%}.two-columns{grid-template-columns:1fr}
+  .items-grid{grid-template-columns:1fr}.item-photo{height:230px}
+  main{padding:22px 14px 55px}
+}
+
+
+.change-password-btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-weight: 700;
+  cursor: pointer;
+}
+.change-password-btn:hover {
+  background: #e0e7ff;
+}
+.sync-status {
+  margin: 6px 0 0 !important;
+  font-size: 12px !important;
+  color: #fff !important;
+  opacity: .88 !important;
+}
+
+
+/* LoFo Password System */
+#passwordScreen,
+#changePasswordModal {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, .72);
+  backdrop-filter: blur(8px);
+}
+#passwordScreen { display: flex; }
+#changePasswordModal { display: none; }
+.password-box {
+  width: min(420px, 100%);
+  box-sizing: border-box;
+  background: white;
+  border-radius: 24px;
+  padding: 32px 26px;
+  text-align: center;
+  box-shadow: 0 25px 70px rgba(0,0,0,.3);
+}
+.password-box .lock-icon { font-size: 52px; margin-bottom: 8px; }
+.password-box h2 { margin: 0 0 8px; font-size: 27px; }
+.password-box p { margin: 0 0 20px; color: #64748b; }
+.password-box input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 16px;
+  outline: none;
+  margin-bottom: 12px;
+}
+.password-box input:focus { border-color: #6366f1; }
+.password-box button {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  padding: 14px;
+  background: #4f46e5;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.password-box button:hover { background: #4338ca; }
+.password-secondary {
+  margin-top: 9px !important;
+  background: #e2e8f0 !important;
+  color: #334155 !important;
+}
+.password-error {
+  min-height: 22px;
+  color: #dc2626;
+  font-size: 14px;
+  margin-top: 8px;
+}
+body.app-locked > *:not(#passwordScreen) { display: none !important; }
+
+</style>
+</head>
+<body class="app-locked">
+
+<div id="passwordScreen">
+  <div class="password-box">
+    <div class="lock-icon">🔐</div>
+    <h2>Welcome to LoFo</h2>
+    <p>Enter the password to open LoFo.</p>
+    <form id="passwordForm">
+      <input id="appPassword" type="password" placeholder="Password" autocomplete="off" required>
+      <button type="submit">Unlock LoFo</button>
+      <div id="passwordError" class="password-error"></div>
+    </form>
+  </div>
+</div>
+
+<div id="changePasswordModal">
+  <div class="password-box">
+    <div class="lock-icon">🔑</div>
+    <h2>Change Password</h2>
+    <p>Create a new password for LoFo.</p>
+    <form id="changePasswordForm">
+      <input id="currentPasswordInput" type="password" placeholder="Current password" autocomplete="off" required>
+      <input id="newPasswordInput" type="password" placeholder="New password (4+ characters)" autocomplete="new-password" required>
+      <input id="confirmPasswordInput" type="password" placeholder="Confirm new password" autocomplete="new-password" required>
+      <button type="submit">Save New Password</button>
+      <button type="button" id="cancelPasswordButton" class="password-secondary">Cancel</button>
+      <div id="changePasswordError" class="password-error"></div>
+    </form>
+  </div>
+</div>
+
+
+
+
+
+<header>
+  <div class="header-content">
+    <div class="top-bar">
+      <div class="logo">
+        <h1>🔎 LoFo</h1>
+        <p>Lost & Found made simple</p>
+        <p id="syncStatus" class="sync-status" role="status">Connecting to shared items...</p>
+      </div>
+      <div class="header-actions">
+<button type="button" id="changePasswordBtn" class="change-password-btn">🔑 Change Password</button>
+        <button class="icon-btn" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+        <button class="add-button" onclick="openAddItem()" title="Add item">+</button>
+      </div>
+    </div>
+    <div class="search-area">
+      <input id="searchInput" type="search" placeholder="🔍 Search item, category, location..." autocomplete="off" oninput="filterItems()">
+      <button class="clear-search" id="clearSearchButton" onclick="clearSearch()" type="button">×</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="toolbar">
+    <button class="action-btn" onclick="openCamera()">📷 Search with Camera</button>
+    <button class="action-btn" onclick="openAddItem()">＋ Report Lost / Found Item</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><strong id="totalCount">0</strong><span>Total items</span></div>
+    <div class="stat"><strong id="lostCount">0</strong><span>Lost</span></div>
+    <div class="stat"><strong id="foundCount">0</strong><span>Found</span></div>
+  </div>
+
+  <div id="categories" class="category-container"></div>
+
+  <div class="section-heading">
+    <h2>Recently Added</h2><span id="itemCount"></span>
+  </div>
+  <div id="itemsGrid" class="items-grid"></div>
+</main>
+
+<!-- ADD/EDIT MODAL -->
+<div id="addModal" class="modal-background">
+  <div class="modal">
+    <div class="modal-title">
+      <h2 id="modalHeading">Add New Item</h2>
+      <button class="close-button" onclick="closeAddItem()">×</button>
+    </div>
+    <form id="addForm">
+      <label class="form-label">Item Name</label>
+      <input id="itemName" class="form-input" placeholder="Example: Red Pencil Box" required>
+
+      <div class="two-columns">
+        <div>
+          <label class="form-label">Category</label>
+          <select id="itemCategory" class="form-select">
+            <option>Stationery</option><option>Water Bottle</option><option>Books</option>
+            <option>Electronics</option><option>Clothing</option><option>Accessories</option><option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Status</label>
+          <select id="itemStatus" class="form-select">
+            <option value="lost">Lost</option><option value="found">Found</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="form-label">Location</label>
+      <select id="itemLocation" class="form-select">
+        <option>Classroom 6A</option><option>School Library</option><option>Playground</option>
+        <option>Canteen</option><option>Reception</option><option>Science Lab</option>
+        <option>Computer Lab</option><option>School Bus Area</option>
+      </select>
+
+      <label class="form-label">Date</label>
+      <input id="itemDate" class="form-input" type="date" required>
+
+      <label class="form-label">Item Photo</label>
+      <label class="photo-upload">
+        📸<br><strong>Click to add a photo</strong><br>
+        <small>Photos are shared with the item.</small>
+        <input id="photoInput" type="file" accept="image/*" capture="environment" onchange="showPreview(event)">
+      </label>
+      <img id="photoPreview" class="preview-image" alt="Photo preview">
+
+      <div class="form-buttons">
+        <button type="button" class="cancel-button" onclick="closeAddItem()">Cancel</button>
+        <button type="submit" class="submit-button">Save Item</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- CAMERA MODAL -->
+<div id="cameraModal" class="modal-background">
+  <div class="modal">
+    <div class="modal-title">
+      <h2>📷 Camera Search</h2>
+      <button class="close-button" onclick="closeCamera()">×</button>
+    </div>
+    <div class="camera-message">
+      <strong>Camera ready</strong><br>
+      Point your camera at an object. This version opens the camera; it does not perform AI image recognition.
+    </div>
+    <video id="cameraVideo" autoplay playsinline></video>
+    <div class="form-buttons">
+      <button class="cancel-button" onclick="closeCamera()">Close</button>
+      <button class="submit-button" onclick="cameraOK()">Done</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const THEME_KEY = "findit_dark_mode";
+const SUPABASE_URL = "https://vlxonhabuaxmhwwqvpfp.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_FQSRL18hd50nPiomavCHFg_cN9qtKLa";
+const IMAGE_BUCKET = "lofo-images";
+let supabaseClient = null;
+
+const defaultItems = [
+  {id:1,name:"Pencil Box",category:"Stationery",location:"Classroom 6A",date:"2026-10-01",status:"lost",image:"https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?auto=format&fit=crop&w=900&q=85"},
+  {id:2,name:"Blue Water Bottle",category:"Water Bottle",location:"Playground",date:"2026-10-01",status:"found",image:"https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=900&q=85"},
+  {id:3,name:"Science Notebook",category:"Books",location:"Science Lab",date:"2026-10-02",status:"lost",image:"https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=900&q=85"},
+  {id:4,name:"Black Hair Band",category:"Accessories",location:"School Library",date:"2026-10-02",status:"found",image:"https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=900&q=85"},
+  {id:5,name:"School Backpack",category:"Other",location:"Canteen",date:"2026-10-02",status:"lost",image:"https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=900&q=85"},
+  {id:6,name:"Wireless Earbuds",category:"Electronics",location:"Computer Lab",date:"2026-10-02",status:"found",image:"https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=900&q=85"}
+];
+
+let items = [...defaultItems];
+let selectedCategory = "All";
+let editingId = null;
+let cameraStream = null;
+
+function setSyncStatus(message){
+  document.getElementById("syncStatus").textContent=message;
+}
+function getSupabase(){
+  if(!SUPABASE_URL.startsWith("https://") || SUPABASE_URL.includes("YOUR_") || SUPABASE_ANON_KEY.includes("YOUR_")){
+    throw new Error("Add your Supabase project URL and anon key in LoFo.html.");
+  }
+  if(!window.supabase?.createClient) throw new Error("Supabase could not load. Check your internet connection.");
+  if(!supabaseClient) supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  return supabaseClient;
+}
+async function fetchItems(){
+  const {data,error}=await getSupabase().from("items").select("*").order("id",{ascending:false});
+  if(error) throw error;
+  return data||[];
+}
+async function loadItems(){
+  let loaded=await fetchItems();
+  if(loaded.length===0){
+    const {error}=await getSupabase().from("items").upsert(defaultItems);
+    if(error) throw error;
+    loaded=await fetchItems();
+  }
+  return loaded;
+}
+async function saveItem(item){
+  const {error}=await getSupabase().from("items").upsert(item);
+  if(error) throw error;
+}
+async function uploadPhoto(file,itemId){
+  const extension=(file.name.split(".").pop()||"jpg").replace(/[^a-z0-9]/gi,"").toLowerCase()||"jpg";
+  const path=`${itemId}/${crypto.randomUUID()}.${extension}`;
+  const {error}=await getSupabase().storage.from(IMAGE_BUCKET).upload(path,file,{contentType:file.type,upsert:false});
+  if(error) throw error;
+  return getSupabase().storage.from(IMAGE_BUCKET).getPublicUrl(path).data.publicUrl;
+}
+function escapeHTML(value){
+  return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+function formatDate(date){
+  if(!date) return "";
+  const d = new Date(date + "T00:00:00");
+  return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
+}
+function displayCategories(){
+  const categories = ["All", ...new Set(items.map(i=>i.category))];
+  document.getElementById("categories").innerHTML = categories.map(c =>
+    `<button class="category ${selectedCategory===c?"active":""}" onclick="selectCategory(${JSON.stringify(c)})">${escapeHTML(c)}</button>`
+  ).join("");
+}
+function displayStats(){
+  document.getElementById("totalCount").textContent = items.length;
+  document.getElementById("lostCount").textContent = items.filter(i=>i.status==="lost").length;
+  document.getElementById("foundCount").textContent = items.filter(i=>i.status==="found").length;
+}
+function displayItems(){
+  const search = document.getElementById("searchInput").value.trim().toLowerCase();
+  const filtered = items.filter(item=>{
+    const text = [item.name,item.category,item.location,item.date,item.status].join(" ").toLowerCase();
+    return text.includes(search) && (selectedCategory==="All" || item.category===selectedCategory);
+  });
+  document.getElementById("itemCount").textContent = `${filtered.length} item${filtered.length!==1?"s":""}`;
+
+  if(!filtered.length){
+    document.getElementById("itemsGrid").innerHTML =
+      `<div class="empty-message">🔍<br><br><strong>No matching items found.</strong><br><br>Try another name, category or location.</div>`;
+    return;
+  }
+
+  document.getElementById("itemsGrid").innerHTML = filtered.map(item=>`
+    <article class="item-card">
+      <div class="item-photo">
+        <span class="status ${item.status}">${item.status==="found"?"✓ Found":"● Lost"}</span>
+        <div class="card-menu">
+          <button onclick="editItem(${item.id})" title="Edit">✏️</button>
+        </div>
+        <img src="${item.image || placeholder()}" alt="${escapeHTML(item.name)}" loading="lazy"
+             onerror="this.src='${placeholder()}'">
+      </div>
+      <div class="item-details">
+        <h3>${escapeHTML(item.name)}</h3>
+        <div class="item-info">📂 ${escapeHTML(item.category)}<br>📍 ${escapeHTML(item.location)}</div>
+        <div class="date">📅 ${formatDate(item.date)}</div>
+        <div class="card-actions">
+          <button class="found-btn" onclick="toggleFound(${item.id})">${item.status==="found"?"↩ Mark Lost":"✓ Mark Found"}</button>
+          <button class="delete-btn" onclick="deleteItem(${item.id})">🗑 Delete</button>
+        </div>
+      </div>
+    </article>
+  `).join("");
+}
+function placeholder(){
+  return "https://placehold.co/900x600/f0eeff/5b4de8?text=No+Photo";
+}
+function render(){
+  displayCategories(); displayStats(); displayItems();
+}
+function selectCategory(category){
+  selectedCategory=category; render();
+}
+function filterItems(){
+  const value=document.getElementById("searchInput").value.trim();
+  document.getElementById("clearSearchButton").style.display=value?"block":"none";
+  displayItems();
+}
+function clearSearch(){
+  document.getElementById("searchInput").value="";
+  document.getElementById("clearSearchButton").style.display="none";
+  displayItems(); document.getElementById("searchInput").focus();
+}
+function openAddItem(){
+  editingId=null;
+  document.getElementById("modalHeading").textContent="Add New Item";
+  document.getElementById("addForm").reset();
+  document.getElementById("itemDate").value=new Date().toISOString().split("T")[0];
+  document.getElementById("photoPreview").style.display="none";
+  document.getElementById("photoPreview").src="";
+  document.getElementById("addModal").style.display="flex";
+  setTimeout(()=>document.getElementById("itemName").focus(),50);
+}
+function editItem(id){
+  const item=items.find(i=>i.id===id); if(!item)return;
+  editingId=id;
+  document.getElementById("modalHeading").textContent="Edit Item";
+  document.getElementById("itemName").value=item.name;
+  document.getElementById("itemCategory").value=item.category;
+  document.getElementById("itemStatus").value=item.status;
+  document.getElementById("itemLocation").value=item.location;
+  document.getElementById("itemDate").value=item.date;
+  const preview=document.getElementById("photoPreview");
+  preview.src=item.image||""; preview.style.display=item.image?"block":"none";
+  document.getElementById("photoInput").value="";
+  document.getElementById("addModal").style.display="flex";
+}
+function closeAddItem(){
+  document.getElementById("addModal").style.display="none";
+  editingId=null;
+}
+function showPreview(event){
+  const file=event.target.files[0]; if(!file)return;
+  if(!file.type.startsWith("image/")){showToast("Please choose an image.");event.target.value="";return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const p=document.getElementById("photoPreview");
+    p.src=e.target.result;p.style.display="block";
+  };
+  reader.readAsDataURL(file);
+}
+document.getElementById("addForm").addEventListener("submit",async function(e){
+  e.preventDefault();
+  const file=document.getElementById("photoInput").files[0];
+  const submitButton=this.querySelector(".submit-button");
+  submitButton.disabled=true;
+  submitButton.textContent="Saving...";
+  try{
+    const existing=editingId?items.find(i=>i.id===editingId):null;
+    const id=editingId||Date.now();
+    const image=file?await uploadPhoto(file,id):(existing?.image||placeholder());
+    const item={
+      id,
+      name:document.getElementById("itemName").value.trim(),
+      category:document.getElementById("itemCategory").value,
+      status:document.getElementById("itemStatus").value,
+      location:document.getElementById("itemLocation").value,
+      date:document.getElementById("itemDate").value,
+      image
+    };
+    await saveItem(item);
+    if(existing){
+      const index=items.findIndex(i=>i.id===id);
+      if(index>=0) items[index]=item;
+    }else{
+      items.unshift(item);
+    }
+    closeAddItem();
+    render();
+    showToast(existing?"Item updated successfully!":"Item added successfully!");
+  }catch(error){
+    showToast(`Save failed: ${error.message}`);
+  }finally{
+    submitButton.disabled=false;
+    submitButton.textContent="Save Item";
+  }
+});
+async function toggleFound(id){
+  const item=items.find(i=>i.id===id); if(!item)return;
+  const updated={...item,status:item.status==="found"?"lost":"found"};
+  try{
+    await saveItem(updated);
+    items=items.map(current=>current.id===id?updated:current);
+    render();
+    showToast(updated.status==="found"?"Marked as found!":"Marked as lost.");
+  }catch(error){showToast(`Update failed: ${error.message}`);}
+}
+async function deleteItem(id){
+  const item=items.find(i=>i.id===id); if(!item)return;
+  if(!confirm(`Delete "${item.name}"?`))return;
+  try{
+    const {error}=await getSupabase().from("items").delete().eq("id",id);
+    if(error) throw error;
+    items=items.filter(i=>i.id!==id);render();showToast("Item deleted.");
+  }catch(error){showToast(`Delete failed: ${error.message}`);}
+}
+async function openCamera(){
+  document.getElementById("cameraModal").style.display="flex";
+  const video=document.getElementById("cameraVideo");
+  try{
+    if(!navigator.mediaDevices?.getUserMedia) throw new Error("Camera unavailable");
+    cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
+    video.srcObject=cameraStream;
+  }catch(e){
+    video.removeAttribute("srcObject");
+    showToast("Camera permission was not available.");
+  }
+}
+function closeCamera(){
+  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
+  document.getElementById("cameraVideo").srcObject=null;
+  document.getElementById("cameraModal").style.display="none";
+}
+function cameraOK(){closeCamera();showToast("Camera closed. Image recognition is not enabled yet.");}
+function showToast(message){
+  const toast=document.getElementById("toast");
+  toast.textContent=message;toast.classList.add("show");
+  clearTimeout(window.toastTimer);
+  window.toastTimer=setTimeout(()=>toast.classList.remove("show"),2400);
+}
+function toggleDarkMode(){
+  document.body.classList.toggle("dark");
+  localStorage.setItem(THEME_KEY,document.body.classList.contains("dark")?"1":"0");
+}
+if(localStorage.getItem(THEME_KEY)==="1") document.body.classList.add("dark");
+
+document.querySelectorAll(".modal-background").forEach(modal=>{
+  modal.addEventListener("click",e=>{if(e.target===modal){modal.id==="cameraModal"?closeCamera():closeAddItem();}});
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){closeAddItem();closeCamera();}
+});
+
+async function initApp(){
+  try{
+    getSupabase();
+    setSyncStatus("Connecting to shared items...");
+    items=await loadItems();
+    render();
+    setSyncStatus("Connected: items are shared with everyone.");
+    getSupabase().channel("lofo-items")
+      .on("postgres_changes",{event:"*",schema:"public",table:"items"},async()=>{
+        try{items=await fetchItems();render();}
+        catch(error){setSyncStatus(`Sync error: ${error.message}`);}
+      })
+      .subscribe(status=>{
+        if(status==="CHANNEL_ERROR") setSyncStatus("Live updates unavailable; reload to refresh.");
+      });
+  }catch(error){
+    items=[];
+    render();
+    setSyncStatus(`Supabase setup needed: ${error.message}`);
+  }
+}
+
+initApp();
+</script>
+
+
+
+
+<script>
+(function () {
+  "use strict";
+
+  const PASSWORD_KEY = "lofo_password";
+  const INITIAL_PASSWORD = "12345";
+
+  async function getPassword() {
+    return localStorage.getItem(PASSWORD_KEY) || INITIAL_PASSWORD;
+  }
+
+  async function setPassword(password) {
+    localStorage.setItem(PASSWORD_KEY, password);
+  }
+
+  function unlockApp() {
+    document.body.classList.remove("app-locked");
+    const screen = document.getElementById("passwordScreen");
+    if (screen) screen.style.display = "none";
+  }
+
+  function openChangePassword() {
+    const modal = document.getElementById("changePasswordModal");
+    const error = document.getElementById("changePasswordError");
+    const current = document.getElementById("currentPasswordInput");
+    if (!modal) return;
+
+    if (error) error.textContent = "";
+    modal.style.display = "flex";
+    if (current) {
+      current.value = "";
+      setTimeout(() => current.focus(), 50);
+    }
+  }
+
+  function closeChangePassword() {
+    const modal = document.getElementById("changePasswordModal");
+    if (modal) modal.style.display = "none";
+  }
+
+  // Always require the password when the page opens.
+  if (!localStorage.getItem(PASSWORD_KEY)) {
+    setPassword(INITIAL_PASSWORD);
+  }
+
+  const passwordForm = document.getElementById("passwordForm");
+  const passwordInput = document.getElementById("appPassword");
+  const passwordError = document.getElementById("passwordError");
+
+  if (passwordForm) {
+    passwordForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const savedPassword = await getPassword();
+
+      if (passwordInput.value === savedPassword) {
+        passwordInput.value = "";
+        passwordError.textContent = "";
+        unlockApp();
+      } else {
+        passwordError.textContent = "Incorrect password. Try again.";
+        passwordInput.value = "";
+        passwordInput.focus();
+      }
+    });
+  }
+
+  const changeButton = document.getElementById("changePasswordBtn");
+  if (changeButton) {
+    changeButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      openChangePassword();
+    });
+  }
+
+  const cancelButton = document.getElementById("cancelPasswordButton");
+  if (cancelButton) {
+    cancelButton.addEventListener("click", closeChangePassword);
+  }
+
+  const changeForm = document.getElementById("changePasswordForm");
+  if (changeForm) {
+    changeForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const current = document.getElementById("currentPasswordInput").value;
+      const newPassword = document.getElementById("newPasswordInput").value;
+      const confirm = document.getElementById("confirmPasswordInput").value;
+      const error = document.getElementById("changePasswordError");
+      const savedPassword = await getPassword();
+
+      if (current !== savedPassword) {
+        error.textContent = "Current password is incorrect.";
+        return;
+      }
+
+      if (newPassword.length < 4) {
+        error.textContent = "New password must be at least 4 characters.";
+        return;
+      }
+
+      if (newPassword !== confirm) {
+        error.textContent = "The new passwords do not match.";
+        return;
+      }
+
+      await setPassword(newPassword);
+      document.getElementById("currentPasswordInput").value = "";
+      document.getElementById("newPasswordInput").value = "";
+      document.getElementById("confirmPasswordInput").value = "";
+      error.textContent = "";
+      closeChangePassword();
+      if (typeof showToast === "function") {
+        showToast("Password changed successfully!");
+      } else {
+        alert("Password changed successfully!");
+      }
+    });
+  }
+
+  // Allow clicking outside the change-password box to close it.
+  const changeModal = document.getElementById("changePasswordModal");
+  if (changeModal) {
+    changeModal.addEventListener("click", function (event) {
+      if (event.target === changeModal) closeChangePassword();
+    });
+  }
+
+  // Keep password screen visible until correct password is entered.
+  document.body.classList.add("app-locked");
+  const screen = document.getElementById("passwordScreen");
+  if (screen) screen.style.display = "flex";
+})();
+</script>
+
+</body>
+</html>

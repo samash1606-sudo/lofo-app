@@ -73,8 +73,11 @@ main{padding:30px 20px 64px}
   font-weight:700;box-shadow:none;transition:background .18s,border-color .18s,transform .18s
 }
 .action-btn:hover{transform:translateY(-1px);background:var(--surface);border-color:#b9d4bd}
+.action-btn.primary-action{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(23,104,68,.16)}
+.action-btn.primary-action:hover{background:#125438;border-color:#125438}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:22px}
-.stat{background:#fff;border:1px solid var(--border);border-top:3px solid var(--primary);border-radius:8px;padding:12px 15px;box-shadow:none;min-width:0}
+.stat{background:#fff;border:1px solid var(--border);border-top:3px solid var(--primary);border-radius:8px;padding:12px 15px;box-shadow:none;min-width:0;transition:transform .18s,box-shadow .18s}
+.stat:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .stat:nth-child(2){border-top-color:#c84c43}.stat:nth-child(3){border-top-color:var(--success)}
 .stat strong{display:block;font-size:23px;line-height:1.15}.stat span{font-size:12px;color:var(--muted);font-weight:600}
 .category-container{display:flex;gap:3px;overflow-x:auto;padding:3px 2px 0;margin-bottom:20px;border-bottom:1px solid var(--border);scrollbar-width:thin}
@@ -155,6 +158,8 @@ main{padding:30px 20px 64px}
 .dark .search-area input{background:#18251d;color:var(--text);border-color:var(--border)}
 .dark .clear-search,.dark .close-button{background:#2a3b30;color:var(--text)}
 .dark .action-btn,.dark .category,.dark .stat,.dark .empty-message{background:var(--card);color:var(--text)}
+.dark .action-btn.primary-action{background:var(--primary);border-color:var(--primary);color:#fff}
+.dark .action-btn.primary-action:hover{background:#125438;border-color:#125438}
 .dark .category{border-color:transparent}.dark .category.active{background:#20372a;border-color:#78b68a;color:#bce4c7}
 .dark .item-card{border-color:var(--border)}.dark .item-photo{background:#20372a}
 .dark .date,.dark .camera-message,.dark .change-password-btn{background:#20372a;color:#c5e5cc}
@@ -325,7 +330,7 @@ body.app-locked > *:not(#passwordScreen) { display: none !important; }
 <main>
   <div class="toolbar">
     <button class="action-btn" onclick="openCamera()">📷 Search with Camera</button>
-    <button class="action-btn" onclick="openAddItem()">＋ Report Lost / Found Item</button>
+    <button class="action-btn primary-action" onclick="openAddItem()">＋ Report Lost / Found Item</button>
   </div>
 
   <div class="stats">

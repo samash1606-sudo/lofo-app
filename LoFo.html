@@ -28,13 +28,14 @@ header{
 }
 .header-content,main{max-width:1150px;margin:auto}
 .top-bar{display:flex;justify-content:space-between;align-items:center;gap:20px}
-.logo{display:flex;flex-direction:column;align-items:flex-start}
-.logo-brand{display:flex;align-items:center;gap:12px}
+.logo{display:flex;flex-direction:column;align-items:flex-start;min-width:0;max-width:100%}
+.logo-brand{display:flex;align-items:center;gap:12px;min-width:0;max-width:100%}
 .logo-crest{display:block;width:72px;height:72px;object-fit:contain;background:#fff;border-radius:10px;padding:4px}
-.school-name{margin:0 0 10px!important;font-size:16px!important;font-weight:750;line-height:1.25}
-.logo-tagline{margin:3px 0 0!important}
+.logo-copy{display:flex;flex-direction:column;align-items:flex-start;gap:24px;min-width:0}
+.school-name{margin:0!important;font-size:16px!important;font-weight:750;line-height:1.25;max-width:100%;overflow-wrap:anywhere}
+.logo-tagline{margin:0!important}
 .logo h1{position:relative;margin:0;font-family:"Kalam","Segoe Print",cursive;font-size:56px;font-weight:700;line-height:.95;text-shadow:0 3px 7px rgba(0,0,0,.32)}
-.wordmark-leaf{position:absolute;left:.2em;top:-.08em;width:.2em;height:.32em;border-radius:100% 0 100% 0;background:#a9ed3b;transform:rotate(18deg);box-shadow:0 2px 5px #0005}
+.wordmark-leaf{position:absolute;left:.2em;top:0;width:.2em;height:.32em;border-radius:100% 0 100% 0;background:#a9ed3b;transform:rotate(18deg);box-shadow:0 2px 5px #0005}
 .wordmark-leaf::after{content:"";position:absolute;left:45%;top:58%;width:1px;height:.28em;background:#dcff9b;transform:rotate(24deg);transform-origin:top}
 .wordmark-o{position:relative;display:inline-block}
 .wordmark-o::after{content:"";position:absolute;left:50%;top:50%;width:.26em;height:.26em;border:.06em solid #f5fff0;border-radius:50% 50% 50% 0;background:#8de43a;transform:translate(-50%,-68%) rotate(-45deg);box-shadow:0 1px 4px #0006}

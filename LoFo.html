@@ -42,7 +42,9 @@ header{
 .wordmark-o{position:relative;display:inline-block}
 .wordmark-o::after{content:"";position:absolute;left:50%;top:50%;width:.26em;height:.26em;border:.06em solid #f5fff0;border-radius:50% 50% 50% 0;background:#8de43a;transform:translate(-50%,-68%) rotate(-45deg);box-shadow:0 1px 4px #0006}
 .wordmark-o::before{content:"";position:absolute;z-index:1;left:50%;top:50%;width:.08em;height:.08em;border-radius:50%;background:#145b31;transform:translate(-50%,-68%)}
-.wordmark-fo{color:#a9ed3b}
+.wordmark-fo{color:#fff}
+.wordmark-lens{position:relative;display:inline-block;color:#fff}
+.wordmark-lens::after{content:"";position:absolute;z-index:1;right:-.1em;bottom:.04em;width:.38em;height:.1em;border:1px solid #dcff9b;border-radius:999px;background:#a9ed3b;box-shadow:0 2px 4px #0006;transform:rotate(48deg);transform-origin:left center}
 .logo p{margin:5px 0 0;opacity:.88;font-size:14px}
 .logo-tagline{display:flex;align-items:center;gap:8px;font-family:"Kalam","Segoe Print",cursive;font-size:18px!important;font-weight:700;font-style:italic}
 .logo-tagline::before,.logo-tagline::after{content:"";width:16px;height:2px;border-radius:2px;background:#a9ed3b}
@@ -301,7 +303,7 @@ body.app-locked > *:not(#passwordScreen) { display: none !important; }
           <img class="logo-crest" src="assets/dps-crest.png" alt="Delhi Public School crest" width="72" height="72">
           <div class="logo-copy">
             <p class="school-name">Delhi Public School Indirapuram</p>
-            <h1 aria-label="LoFo"><span class="wordmark-leaf" aria-hidden="true"></span><span aria-hidden="true">L</span><span class="wordmark-o" aria-hidden="true">o</span><span class="wordmark-fo" aria-hidden="true">Fo</span></h1>
+            <h1 aria-label="LoFo"><span class="wordmark-leaf" aria-hidden="true"></span><span aria-hidden="true">L</span><span class="wordmark-o" aria-hidden="true">o</span><span class="wordmark-fo" aria-hidden="true">F<span class="wordmark-lens">o</span></span></h1>
             <p class="logo-tagline"><span>Lost and </span><span>Found</span></p>
           </div>
         </div>

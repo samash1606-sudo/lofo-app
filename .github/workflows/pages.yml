@@ -26,6 +26,8 @@ jobs:
         run: |
           mkdir _site
           cp LoFo.html _site/index.html
+          mkdir _site/assets
+          cp assets/dps-crest.png _site/assets/dps-crest.png
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

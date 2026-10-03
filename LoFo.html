@@ -23,6 +23,8 @@ header{
 }
 .header-content,main{max-width:1150px;margin:auto}
 .top-bar{display:flex;justify-content:space-between;align-items:center;gap:20px}
+.logo{display:flex;flex-direction:column;align-items:flex-start}
+.logo-crest{display:block;width:72px;height:72px;object-fit:contain;background:#fff;border-radius:10px;padding:4px;margin-bottom:6px}
 .logo h1{margin:0;font-size:31px;font-weight:850}
 .logo p{margin:5px 0 0;opacity:.88;font-size:14px}
 .header-actions{display:flex;gap:10px}
@@ -129,7 +131,8 @@ main{padding:28px 20px 70px}
 .dark .category{border-color:#35394b}.dark .cancel-button{background:#303444;color:#ddd}
 @media(max-width:600px){
   header{padding:23px 5%;border-radius:0 0 26px 26px}
-  .logo h1{font-size:26px}.toolbar{flex-direction:column;align-items:stretch}
+  .top-bar{flex-wrap:wrap;align-items:flex-start}.header-actions{width:100%;justify-content:flex-end}
+  .logo-crest{width:60px;height:60px}.logo h1{font-size:26px}.toolbar{flex-direction:column;align-items:stretch}
   .action-btn{width:100%}.two-columns{grid-template-columns:1fr}
   .items-grid{grid-template-columns:1fr}.item-photo{height:230px}
   main{padding:22px 14px 55px}
@@ -259,7 +262,8 @@ body.app-locked > *:not(#passwordScreen) { display: none !important; }
   <div class="header-content">
     <div class="top-bar">
       <div class="logo">
-        <h1>🔎 LoFo</h1>
+        <img class="logo-crest" src="assets/dps-crest.png" alt="Delhi Public School crest" width="72" height="72">
+        <h1>LoFo</h1>
         <p>Lost & Found made simple</p>
         <p id="syncStatus" class="sync-status" role="status">Connecting to shared items...</p>
       </div>

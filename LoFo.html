@@ -3,8 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#176844">
+<meta name="theme-color" content="#0b542a">
 <title>LoFo | Lost & Found</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --primary:#176844;--primary2:#248254;--bg:#f4f7f3;--card:#fff;
@@ -17,7 +20,9 @@ body{margin:0;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--bg)
 button,input,select{font:inherit}
 button{cursor:pointer}
 header{
-  background:linear-gradient(135deg,#145b3b,#27845a);
+  background:
+    radial-gradient(ellipse at 17% 14%,rgba(91,195,69,.55),transparent 32%),
+    linear-gradient(135deg,#06371f 0%,#0c622f 54%,#03441f 100%);
   color:#fff;padding:28px 6%;border-radius:0 0 34px 34px;
   box-shadow:0 10px 35px rgba(20,91,59,.22)
 }
@@ -28,9 +33,18 @@ header{
 .logo-crest{display:block;width:72px;height:72px;object-fit:contain;background:#fff;border-radius:10px;padding:4px}
 .school-name{margin:0 0 5px!important;font-size:16px!important;font-weight:750;line-height:1.25}
 .logo-tagline{margin:3px 0 0!important}
-.logo h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:38px;font-weight:700;line-height:1}
-.logo h1 span:last-child{color:#c8efd3}
+.logo h1{position:relative;margin:0;font-family:"Kalam","Segoe Print",cursive;font-size:56px;font-weight:700;line-height:.95;text-shadow:0 3px 7px rgba(0,0,0,.32)}
+.wordmark-leaf{position:absolute;left:.2em;top:-.28em;width:.2em;height:.32em;border-radius:100% 0 100% 0;background:#a9ed3b;transform:rotate(18deg);box-shadow:0 2px 5px #0005}
+.wordmark-leaf::after{content:"";position:absolute;left:45%;top:58%;width:1px;height:.28em;background:#dcff9b;transform:rotate(24deg);transform-origin:top}
+.wordmark-o{position:relative;display:inline-block}
+.wordmark-o::after{content:"";position:absolute;left:50%;top:50%;width:.26em;height:.26em;border:.06em solid #f5fff0;border-radius:50% 50% 50% 0;background:#8de43a;transform:translate(-50%,-68%) rotate(-45deg);box-shadow:0 1px 4px #0006}
+.wordmark-o::before{content:"";position:absolute;z-index:1;left:50%;top:50%;width:.08em;height:.08em;border-radius:50%;background:#145b31;transform:translate(-50%,-68%)}
+.wordmark-fo{color:#a9ed3b}
 .logo p{margin:5px 0 0;opacity:.88;font-size:14px}
+.logo-tagline{display:flex;align-items:center;gap:8px;font-family:"Kalam","Segoe Print",cursive;font-size:18px!important;font-weight:700;font-style:italic}
+.logo-tagline::before,.logo-tagline::after{content:"";width:16px;height:2px;border-radius:2px;background:#a9ed3b}
+.logo-tagline span{color:#fff}
+.logo-tagline span:last-child{color:#a9ed3b}
 .header-actions{display:flex;gap:10px}
 .icon-btn,.add-button{
   width:48px;height:48px;border:0;border-radius:15px;background:#fff;color:var(--primary);
@@ -136,7 +150,7 @@ main{padding:28px 20px 70px}
 @media(max-width:600px){
   header{padding:23px 5%;border-radius:0 0 26px 26px}
   .top-bar{flex-wrap:wrap;align-items:flex-start}.header-actions{width:100%;justify-content:flex-end}
-  .logo-crest{width:60px;height:60px}.school-name{font-size:14px!important}.logo h1{font-size:26px}.toolbar{flex-direction:column;align-items:stretch}
+  .logo-crest{width:60px;height:60px}.school-name{font-size:14px!important}.logo h1{font-size:46px}.logo-tagline{font-size:16px!important}.toolbar{flex-direction:column;align-items:stretch}
   .action-btn{width:100%}.two-columns{grid-template-columns:1fr}
   .items-grid{grid-template-columns:1fr}.item-photo{height:230px}
   main{padding:22px 14px 55px}
@@ -270,8 +284,8 @@ body.app-locked > *:not(#passwordScreen) { display: none !important; }
           <img class="logo-crest" src="assets/dps-crest.png" alt="Delhi Public School crest" width="72" height="72">
           <div class="logo-copy">
             <p class="school-name">Delhi Public School Indirapuram</p>
-            <h1><span>Lo</span><span>Fo</span></h1>
-            <p class="logo-tagline">Lost & Found made simple</p>
+            <h1 aria-label="LoFo"><span class="wordmark-leaf" aria-hidden="true"></span><span aria-hidden="true">L</span><span class="wordmark-o" aria-hidden="true">o</span><span class="wordmark-fo" aria-hidden="true">Fo</span></h1>
+            <p class="logo-tagline"><span>Lost and </span><span>Found</span></p>
           </div>
         </div>
         <p id="syncStatus" class="sync-status" role="status">Connecting to shared items...</p>

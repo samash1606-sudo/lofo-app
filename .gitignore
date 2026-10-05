@@ -3,6 +3,7 @@
 !LoFo.html
 !SUPABASE_SETUP.txt
 !SUPABASE_ROLES_SETUP.sql
+!SUPABASE_RESTORE_PUBLIC_POLICIES.sql
 !.github/
 !.github/workflows/
 !.github/workflows/pages.yml

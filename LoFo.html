@@ -741,15 +741,19 @@ applyAccessMode();
 (function () {
   "use strict";
 
-  const PASSWORD_KEY = "lofo_password";
-  const INITIAL_PASSWORD = "12345";
+  const PASSWORD_KEYS = { admin: "lofo_admin_password", member: "lofo_member_password" };
+  const INITIAL_PASSWORDS = { admin: "Admin123", member: "12345" };
+  const LEGACY_PASSWORD_KEY = "lofo_password";
 
   async function getPassword() {
-    return localStorage.getItem(PASSWORD_KEY) || INITIAL_PASSWORD;
+    const rolePassword = localStorage.getItem(PASSWORD_KEYS[accessMode]);
+    if (rolePassword) return rolePassword;
+    if (accessMode === "member") return localStorage.getItem(LEGACY_PASSWORD_KEY) || INITIAL_PASSWORDS.member;
+    return INITIAL_PASSWORDS.admin;
   }
 
   async function setPassword(password) {
-    localStorage.setItem(PASSWORD_KEY, password);
+    localStorage.setItem(PASSWORD_KEYS[accessMode], password);
   }
 
   function unlockApp() {
@@ -778,10 +782,6 @@ applyAccessMode();
   }
 
   // Always require the password when the page opens.
-  if (!localStorage.getItem(PASSWORD_KEY)) {
-    setPassword(INITIAL_PASSWORD);
-  }
-
   const passwordForm = document.getElementById("passwordForm");
   const passwordInput = document.getElementById("appPassword");
   const passwordError = document.getElementById("passwordError");

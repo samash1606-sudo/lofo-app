@@ -62,8 +62,10 @@ photos, so complete the setup above before expecting shared data to work.
 Role links:
 - Admin: https://samash1606-sudo.github.io/lofo-app/?access=admin
 - Member (default): https://samash1606-sudo.github.io/lofo-app/?access=member
-Both links use the existing browser password. The Admin link shows the add-item
-controls; the Member link hides them while keeping edit/status/delete controls.
+The Admin link defaults to `Admin123`; the Member link keeps the old `12345`
+password (or that browser's previously changed password). Passwords are stored
+per browser. The Admin link shows add-item controls; the Member link hides them
+while keeping edit/status/delete controls.
 
 When the table is empty, LoFo inserts its six example items. New records and
 photos are then shared across visitors and update live when Realtime is enabled.

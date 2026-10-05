@@ -59,6 +59,12 @@ GitHub Pages serves only the static app; it does not run server.js or server.py.
 LoFo uses the Supabase project configured in LoFo.html for shared items and
 photos, so complete the setup above before expecting shared data to work.
 
+Role links:
+- Admin: https://samash1606-sudo.github.io/lofo-app/?access=admin
+- Member (default): https://samash1606-sudo.github.io/lofo-app/?access=member
+Both links use the existing browser password. The Admin link shows the add-item
+controls; the Member link hides them while keeping edit/status/delete controls.
+
 When the table is empty, LoFo inserts its six example items. New records and
 photos are then shared across visitors and update live when Realtime is enabled.
 
@@ -66,5 +72,7 @@ Security note:
 These public policies allow anyone with the website to add, edit, or delete
 items and upload/delete photos. The LoFo password prompt is only a browser-side
 screen, not real security; its password is stored per browser and does not protect
-the public database. For restricted access, use Supabase Auth and authenticated
-policies instead of the public write policies above.
+the public database. The Admin/Member links only change the interface and can be
+bypassed; anyone can still add items through the public API. For enforced role
+permissions, use Supabase Auth and authenticated policies instead of the public
+write policies above.

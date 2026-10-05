@@ -249,6 +249,10 @@ main{padding:30px 20px 64px}
   cursor: pointer;
 }
 .password-box button:hover { background: #125438; }
+.role-links{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:16px 0 10px}
+.role-link{display:block;padding:11px 8px;border:1px solid #d7e5d8;border-radius:10px;background:#f5faf4;color:#176844;text-decoration:none;font-size:13px;font-weight:750;line-height:1.35}
+.role-link:hover,.role-link.active{border-color:#176844;background:#e8f3e7}
+.role-description{font-size:12px!important;line-height:1.4;margin:0 0 14px!important}
 .password-secondary {
   margin-top: 9px !important;
   background: #e2e8f0 !important;
@@ -270,7 +274,12 @@ body.app-locked > *:not(#passwordScreen) { display: none !important; }
   <div class="password-box">
     <div class="lock-icon">🔐</div>
     <h2>Welcome to LoFo</h2>
-    <p>Enter the password to open LoFo.</p>
+    <p>Choose how you want to use LoFo.</p>
+    <nav class="role-links" aria-label="Choose LoFo access">
+      <a id="adminAccessLink" class="role-link" href="?access=admin">Admin<br>Can add and manage</a>
+      <a id="memberAccessLink" class="role-link" href="?access=member">Member<br>Manage, no adding</a>
+    </nav>
+    <p id="roleDescription" class="role-description">Member access selected. Both links use the existing LoFo password.</p>
     <form id="passwordForm">
       <input id="appPassword" type="password" placeholder="Password" autocomplete="off" required>
       <button type="submit">Unlock LoFo</button>
@@ -316,7 +325,7 @@ body.app-locked > *:not(#passwordScreen) { display: none !important; }
       <div class="header-actions">
 <button type="button" id="changePasswordBtn" class="change-password-btn">🔑 Change Password</button>
         <button class="icon-btn" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
-        <button class="add-button" onclick="openAddItem()" title="Add item">+</button>
+        <button class="add-button admin-only" onclick="openAddItem()" title="Add item">+</button>
       </div>
     </div>
     <div class="search-area">
@@ -329,7 +338,7 @@ body.app-locked > *:not(#passwordScreen) { display: none !important; }
 <main>
   <div class="toolbar">
     <button class="action-btn" onclick="openCamera()">📷 Search with Camera</button>
-    <button class="action-btn primary-action" onclick="openAddItem()">＋ Report Lost / Found Item</button>
+    <button class="action-btn primary-action admin-only" onclick="openAddItem()">＋ Report Lost / Found Item</button>
   </div>
 
   <div class="stats">
@@ -441,6 +450,17 @@ let items = [...defaultItems];
 let selectedCategory = "All";
 let editingId = null;
 let cameraStream = null;
+let accessMode = new URLSearchParams(window.location.search).get("access")==="admin"?"admin":"member";
+
+function applyAccessMode(){
+  const isAdmin=accessMode==="admin";
+  document.getElementById("adminAccessLink").classList.toggle("active",isAdmin);
+  document.getElementById("memberAccessLink").classList.toggle("active",!isAdmin);
+  document.getElementById("roleDescription").textContent=isAdmin
+    ?"Admin access selected. You can add and manage items."
+    :"Member access selected. You can manage items but cannot add new ones.";
+  document.querySelectorAll(".admin-only").forEach(button=>{button.hidden=!isAdmin;});
+}
 
 function setSyncStatus(message){
   document.getElementById("syncStatus").textContent=message;
@@ -557,6 +577,7 @@ function clearSearch(){
   displayItems(); document.getElementById("searchInput").focus();
 }
 function openAddItem(){
+  if(accessMode!=="admin"){showToast("Choose Admin access to add a new item.");return;}
   editingId=null;
   document.getElementById("modalHeading").textContent="Add New Item";
   document.getElementById("addForm").reset();
@@ -596,6 +617,7 @@ function showPreview(event){
 }
 document.getElementById("addForm").addEventListener("submit",async function(e){
   e.preventDefault();
+  if(!editingId&&accessMode!=="admin"){showToast("Choose Admin access to add a new item.");return;}
   const file=document.getElementById("photoInput").files[0];
   const submitButton=this.querySelector(".submit-button");
   submitButton.disabled=true;
@@ -709,6 +731,7 @@ async function initApp(){
 }
 
 initApp();
+applyAccessMode();
 </script>
 
 

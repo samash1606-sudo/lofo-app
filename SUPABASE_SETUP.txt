@@ -1,10 +1,11 @@
 LoFo Supabase Setup
 
-LoFo uses Supabase Auth for accounts, Postgres for shared items, and Storage for
-photos. The project URL and public anon/publishable key go in LoFo.html. Never
-put a service-role or secret key in a browser page.
+The HTML page uses Supabase for shared item records, live updates, and item photos.
+The project URL and public anon/publishable key go in LoFo.html. Never use a
+service-role or secret key in a browser page.
 
-1. In Supabase SQL Editor, create the items table if it does not already exist:
+1. Create a Supabase project and open SQL Editor.
+2. Run this SQL to create the shared items table and public policies:
 
 create table if not exists public.items (
   id bigint primary key,
@@ -17,40 +18,53 @@ create table if not exists public.items (
 );
 
 alter table public.items enable row level security;
-2. In Storage, create a public bucket named `lofo-images` if it does not already
-  exist. Public read access is needed to display item photos.
-3. Open SQL Editor and run the complete migration in SUPABASE_ROLES_SETUP.sql.
-  It removes the old anonymous write policies, makes all item changes require
-  sign-in, and allows only Admin accounts to create items. Members can edit,
-  mark found/lost, and delete existing items.
-4. Create your first account from the LoFo sign-in screen. New sign-ups are
-  Members by default. Confirm the email first if Supabase email confirmation
-  is enabled, then sign in once so Supabase creates the member role row.
-5. Promote your account to Admin. In Supabase SQL Editor, replace
-  `ADMIN_EMAIL` with your account email in the commented SQL at the bottom of
-  SUPABASE_ROLES_SETUP.sql, uncomment those lines, and run them. Sign out of
-  LoFo and sign in again; the header should show Admin.
-6. Other people can create their own accounts from the sign-in screen. They
-  will automatically receive the Member role and cannot add new items.
-7. In Supabase, open Database > Replication and enable Realtime for public.items.
-8. Copy the Project URL and anon/publishable key from Project Settings > API.
-  Keep only the publishable/anon key in LoFo.html; never expose a service-role
-  key.
 
-The migration configures upload, update, and delete policies for signed-in users
-on the lofo-images bucket. The bucket itself remains public so photos can be
-displayed by their public URLs.
+create policy "Public can read items" on public.items
+  for select to anon using (true);
+create policy "Public can add items" on public.items
+  for insert to anon with check (true);
+create policy "Public can update items" on public.items
+  for update to anon using (true) with check (true);
+create policy "Public can delete items" on public.items
+  for delete to anon using (true);
 
-9. Push this project to GitHub. GitHub Actions publishes LoFo.html and its assets
-  to GitHub Pages. Set Settings > Pages > Build and deployment source to GitHub
-  Actions if it is not already selected.
+3. In Supabase, open Database > Replication and enable Realtime for public.items.
+4. Open SQL Editor and run this SQL to create the public photo bucket and access
+   policies:
 
-GitHub Pages serves only static files; it does not run server.js or server.py.
-The website requires a working Supabase project and the role migration before
-users can sign in and manage items.
+insert into storage.buckets (id, name, public)
+values ('lofo-images', 'lofo-images', true)
+on conflict (id) do update set public = true;
+
+create policy "Public can view LoFo photos" on storage.objects
+  for select to anon using (bucket_id = 'lofo-images');
+create policy "Public can upload LoFo photos" on storage.objects
+  for insert to anon with check (bucket_id = 'lofo-images');
+create policy "Public can update LoFo photos" on storage.objects
+  for update to anon using (bucket_id = 'lofo-images')
+  with check (bucket_id = 'lofo-images');
+create policy "Public can delete LoFo photos" on storage.objects
+  for delete to anon using (bucket_id = 'lofo-images');
+
+5. Copy the Project URL and the anon/publishable key from Project Settings > API.
+   Replace YOUR_SUPABASE_PROJECT_URL and YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY
+   near the top of the main script in LoFo.html.
+6. Push this project to a GitHub repository on the main or master branch. The
+  included GitHub Actions workflow publishes LoFo.html as the site's home page.
+  In the repository, open Settings > Pages and set the build and deployment
+  source to GitHub Actions. After the workflow succeeds, open the Pages URL
+  shown in that section.
+
+GitHub Pages serves only the static app; it does not run server.js or server.py.
+LoFo uses the Supabase project configured in LoFo.html for shared items and
+photos, so complete the setup above before expecting shared data to work.
+
+When the table is empty, LoFo inserts its six example items. New records and
+photos are then shared across visitors and update live when Realtime is enabled.
 
 Security note:
-The role is checked by Supabase Row Level Security, not only by hiding buttons.
-Do not recreate public INSERT, UPDATE, or DELETE policies for items or photos.
-Anyone can view the public site and public item photos, but only signed-in users
-can change data. Only accounts promoted to Admin can add new items.
+These public policies allow anyone with the website to add, edit, or delete
+items and upload/delete photos. The LoFo password prompt is only a browser-side
+screen, not real security; its password is stored per browser and does not protect
+the public database. For restricted access, use Supabase Auth and authenticated
+policies instead of the public write policies above.

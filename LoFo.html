@@ -48,7 +48,7 @@ header{
 .logo-tagline::before,.logo-tagline::after{content:"";width:16px;height:2px;border-radius:2px;background:#a9ed3b}
 .logo-tagline span{color:#fff}
 .logo-tagline span:last-child{color:#a9ed3b}
-.header-actions{display:flex;gap:10px}
+.header-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
 .icon-btn,.add-button{
   width:48px;height:48px;border:0;border-radius:15px;background:#fff;color:var(--primary);
   font-size:22px;font-weight:800;box-shadow:0 6px 20px rgba(0,0,0,.14);transition:.2s
@@ -192,6 +192,15 @@ main{padding:30px 20px 64px}
 .change-password-btn:hover {
   background: #dcebdd;
 }
+.role-badge {
+  align-self: center;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, .38);
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
 .sync-status {
   margin: 6px 0 0 !important;
   font-size: 12px !important;
@@ -269,13 +278,15 @@ body.app-locked > *:not(#passwordScreen) { display: none !important; }
 <div id="passwordScreen">
   <div class="password-box">
     <div class="lock-icon">🔐</div>
-    <h2>Welcome to LoFo</h2>
-    <p>Enter the password to open LoFo.</p>
-    <form id="passwordForm">
-      <input id="appPassword" type="password" placeholder="Password" autocomplete="off" required>
-      <button type="submit">Unlock LoFo</button>
+    <h2 id="authHeading">Welcome to LoFo</h2>
+    <p id="authDescription">Sign in to view and manage lost-and-found items.</p>
+    <form id="authForm">
+      <input id="authEmail" type="email" placeholder="Email address" autocomplete="email" required>
+      <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" minlength="8" required>
+      <button id="authSubmit" type="submit">Sign in</button>
       <div id="passwordError" class="password-error"></div>
     </form>
+    <button id="authModeToggle" type="button" class="password-secondary">Create a member account</button>
   </div>
 </div>
 
@@ -285,9 +296,9 @@ body.app-locked > *:not(#passwordScreen) { display: none !important; }
     <h2>Change Password</h2>
     <p>Create a new password for LoFo.</p>
     <form id="changePasswordForm">
-      <input id="currentPasswordInput" type="password" placeholder="Current password" autocomplete="off" required>
-      <input id="newPasswordInput" type="password" placeholder="New password (4+ characters)" autocomplete="new-password" required>
-      <input id="confirmPasswordInput" type="password" placeholder="Confirm new password" autocomplete="new-password" required>
+      <input id="currentPasswordInput" type="password" placeholder="Current password" autocomplete="current-password" required>
+      <input id="newPasswordInput" type="password" placeholder="New password (8+ characters)" autocomplete="new-password" minlength="8" required>
+      <input id="confirmPasswordInput" type="password" placeholder="Confirm new password" autocomplete="new-password" minlength="8" required>
       <button type="submit">Save New Password</button>
       <button type="button" id="cancelPasswordButton" class="password-secondary">Cancel</button>
       <div id="changePasswordError" class="password-error"></div>
@@ -314,9 +325,11 @@ body.app-locked > *:not(#passwordScreen) { display: none !important; }
         <p id="syncStatus" class="sync-status" role="status">Connecting to shared items...</p>
       </div>
       <div class="header-actions">
-<button type="button" id="changePasswordBtn" class="change-password-btn">🔑 Change Password</button>
+        <span id="roleBadge" class="role-badge">Member</span>
+        <button type="button" id="changePasswordBtn" class="change-password-btn">🔑 Change Password</button>
         <button class="icon-btn" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
-        <button class="add-button" onclick="openAddItem()" title="Add item">+</button>
+        <button id="headerAddButton" class="add-button admin-only" onclick="openAddItem()" title="Add item">+</button>
+        <button type="button" id="signOutBtn" class="change-password-btn">Sign out</button>
       </div>
     </div>
     <div class="search-area">
@@ -329,7 +342,7 @@ body.app-locked > *:not(#passwordScreen) { display: none !important; }
 <main>
   <div class="toolbar">
     <button class="action-btn" onclick="openCamera()">📷 Search with Camera</button>
-    <button class="action-btn primary-action" onclick="openAddItem()">＋ Report Lost / Found Item</button>
+    <button class="action-btn primary-action admin-only" onclick="openAddItem()">＋ Report Lost / Found Item</button>
   </div>
 
   <div class="stats">
@@ -441,6 +454,9 @@ let items = [...defaultItems];
 let selectedCategory = "All";
 let editingId = null;
 let cameraStream = null;
+let currentUserRole = "member";
+let appHasStarted = false;
+let realtimeChannel = null;
 
 function setSyncStatus(message){
   document.getElementById("syncStatus").textContent=message;
@@ -459,16 +475,13 @@ async function fetchItems(){
   return data||[];
 }
 async function loadItems(){
-  let loaded=await fetchItems();
-  if(loaded.length===0){
-    const {error}=await getSupabase().from("items").upsert(defaultItems);
-    if(error) throw error;
-    loaded=await fetchItems();
-  }
-  return loaded;
+  return await fetchItems();
 }
-async function saveItem(item){
-  const {error}=await getSupabase().from("items").upsert(item);
+async function saveItem(item,isNew=false){
+  const query=isNew
+    ?getSupabase().from("items").insert(item)
+    :getSupabase().from("items").update(item).eq("id",item.id);
+  const {error}=await query;
   if(error) throw error;
 }
 async function uploadPhoto(file,itemId){
@@ -557,6 +570,7 @@ function clearSearch(){
   displayItems(); document.getElementById("searchInput").focus();
 }
 function openAddItem(){
+  if(currentUserRole!=="admin")return showToast("Only an Admin can add new items.");
   editingId=null;
   document.getElementById("modalHeading").textContent="Add New Item";
   document.getElementById("addForm").reset();
@@ -596,6 +610,7 @@ function showPreview(event){
 }
 document.getElementById("addForm").addEventListener("submit",async function(e){
   e.preventDefault();
+  if(!editingId&&currentUserRole!=="admin")return showToast("Only an Admin can add new items.");
   const file=document.getElementById("photoInput").files[0];
   const submitButton=this.querySelector(".submit-button");
   submitButton.disabled=true;
@@ -613,7 +628,7 @@ document.getElementById("addForm").addEventListener("submit",async function(e){
       date:document.getElementById("itemDate").value,
       image
     };
-    await saveItem(item);
+    await saveItem(item,!existing);
     if(existing){
       const index=items.findIndex(i=>i.id===id);
       if(index>=0) items[index]=item;
@@ -693,7 +708,8 @@ async function initApp(){
     items=await loadItems();
     render();
     setSyncStatus("Connected: items are shared with everyone.");
-    getSupabase().channel("lofo-items")
+    if(realtimeChannel)getSupabase().removeChannel(realtimeChannel);
+    realtimeChannel=getSupabase().channel("lofo-items")
       .on("postgres_changes",{event:"*",schema:"public",table:"items"},async()=>{
         try{items=await fetchItems();render();}
         catch(error){setSyncStatus(`Sync error: ${error.message}`);}
@@ -708,7 +724,6 @@ async function initApp(){
   }
 }
 
-initApp();
 </script>
 
 
@@ -718,21 +733,62 @@ initApp();
 (function () {
   "use strict";
 
-  const PASSWORD_KEY = "lofo_password";
-  const INITIAL_PASSWORD = "12345";
+  let isSignUpMode = false;
 
-  async function getPassword() {
-    return localStorage.getItem(PASSWORD_KEY) || INITIAL_PASSWORD;
+  function setAuthMessage(message) {
+    document.getElementById("passwordError").textContent = message;
   }
 
-  async function setPassword(password) {
-    localStorage.setItem(PASSWORD_KEY, password);
+  function setAuthMode(signUp) {
+    isSignUpMode = signUp;
+    document.getElementById("authHeading").textContent = signUp ? "Create a Member Account" : "Welcome to LoFo";
+    document.getElementById("authDescription").textContent = signUp
+      ? "New accounts can manage existing items but cannot add items."
+      : "Sign in to view and manage lost-and-found items.";
+    document.getElementById("authSubmit").textContent = signUp ? "Create account" : "Sign in";
+    document.getElementById("authModeToggle").textContent = signUp ? "Back to sign in" : "Create a member account";
+    document.getElementById("authPassword").autocomplete = signUp ? "new-password" : "current-password";
+    setAuthMessage("");
   }
 
-  function unlockApp() {
-    document.body.classList.remove("app-locked");
-    const screen = document.getElementById("passwordScreen");
-    if (screen) screen.style.display = "none";
+  function lockApp(message = "") {
+    appHasStarted = false;
+    currentUserRole = "member";
+    document.body.classList.add("app-locked");
+    document.getElementById("passwordScreen").style.display = "flex";
+    document.getElementById("roleBadge").textContent = "Member";
+    document.querySelectorAll(".admin-only").forEach(element => { element.hidden = true; });
+    if (realtimeChannel) {
+      getSupabase().removeChannel(realtimeChannel);
+      realtimeChannel = null;
+    }
+    setAuthMessage(message);
+  }
+
+  async function activateSession(session) {
+    if (!session) return;
+    try {
+      const { data, error } = await getSupabase()
+        .from("lofo_user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("Your role is not set up yet. Ask the LoFo administrator to finish account setup.");
+
+      currentUserRole = data.role === "admin" ? "admin" : "member";
+      document.getElementById("roleBadge").textContent = currentUserRole === "admin" ? "Admin" : "Member";
+      document.querySelectorAll(".admin-only").forEach(element => { element.hidden = currentUserRole !== "admin"; });
+      document.body.classList.remove("app-locked");
+      document.getElementById("passwordScreen").style.display = "none";
+      setAuthMessage("");
+      if (!appHasStarted) {
+        appHasStarted = true;
+        await initApp();
+      }
+    } catch (error) {
+      setAuthMessage(`Account setup needed: ${error.message}`);
+    }
   }
 
   function openChangePassword() {
@@ -754,31 +810,51 @@ initApp();
     if (modal) modal.style.display = "none";
   }
 
-  // Always require the password when the page opens.
-  if (!localStorage.getItem(PASSWORD_KEY)) {
-    setPassword(INITIAL_PASSWORD);
-  }
-
-  const passwordForm = document.getElementById("passwordForm");
-  const passwordInput = document.getElementById("appPassword");
-  const passwordError = document.getElementById("passwordError");
-
-  if (passwordForm) {
-    passwordForm.addEventListener("submit", async function (event) {
-      event.preventDefault();
-      const savedPassword = await getPassword();
-
-      if (passwordInput.value === savedPassword) {
-        passwordInput.value = "";
-        passwordError.textContent = "";
-        unlockApp();
+  document.getElementById("authModeToggle").addEventListener("click", () => setAuthMode(!isSignUpMode));
+  document.getElementById("authForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const email = document.getElementById("authEmail").value.trim();
+    const password = document.getElementById("authPassword").value;
+    const submit = document.getElementById("authSubmit");
+    submit.disabled = true;
+    setAuthMessage("");
+    try {
+      const auth = getSupabase().auth;
+      if (isSignUpMode) {
+        const { data, error } = await auth.signUp({ email, password });
+        if (error) throw error;
+        if (data.session) {
+          await activateSession(data.session);
+        } else {
+          setAuthMode(false);
+          setAuthMessage("Check your email to confirm your account, then sign in. New accounts are Members by default.");
+        }
       } else {
-        passwordError.textContent = "Incorrect password. Try again.";
-        passwordInput.value = "";
-        passwordInput.focus();
+        const { data, error } = await auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        await activateSession(data.session);
       }
-    });
-  }
+    } catch (error) {
+      setAuthMessage(error.message || "Sign-in failed. Please try again.");
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
+  document.getElementById("signOutBtn").addEventListener("click", async () => {
+    const { error } = await getSupabase().auth.signOut();
+    if (error) showToast(`Sign out failed: ${error.message}`);
+    else lockApp();
+  });
+
+  getSupabase().auth.onAuthStateChange(event => {
+    if (event === "SIGNED_OUT") lockApp();
+  });
+
+  getSupabase().auth.getSession().then(({ data, error }) => {
+    if (error) setAuthMessage(error.message);
+    else if (data.session) activateSession(data.session);
+  }).catch(error => setAuthMessage(error.message));
 
   const changeButton = document.getElementById("changePasswordBtn");
   if (changeButton) {
@@ -802,15 +878,8 @@ initApp();
       const newPassword = document.getElementById("newPasswordInput").value;
       const confirm = document.getElementById("confirmPasswordInput").value;
       const error = document.getElementById("changePasswordError");
-      const savedPassword = await getPassword();
-
-      if (current !== savedPassword) {
-        error.textContent = "Current password is incorrect.";
-        return;
-      }
-
-      if (newPassword.length < 4) {
-        error.textContent = "New password must be at least 4 characters.";
+      if (newPassword.length < 8) {
+        error.textContent = "New password must be at least 8 characters.";
         return;
       }
 
@@ -819,17 +888,22 @@ initApp();
         return;
       }
 
-      await setPassword(newPassword);
+      const auth = getSupabase().auth;
+      const { data: userData, error: userError } = await auth.getUser();
+      if (userError) throw userError;
+      const { error: verifyError } = await auth.signInWithPassword({ email: userData.user.email, password: current });
+      if (verifyError) {
+        error.textContent = "Current password is incorrect.";
+        return;
+      }
+      const { error: updateError } = await auth.updateUser({ password: newPassword });
+      if (updateError) throw updateError;
       document.getElementById("currentPasswordInput").value = "";
       document.getElementById("newPasswordInput").value = "";
       document.getElementById("confirmPasswordInput").value = "";
       error.textContent = "";
       closeChangePassword();
-      if (typeof showToast === "function") {
-        showToast("Password changed successfully!");
-      } else {
-        alert("Password changed successfully!");
-      }
+      showToast("Password changed successfully!");
     });
   }
 
@@ -841,10 +915,9 @@ initApp();
     });
   }
 
-  // Keep password screen visible until correct password is entered.
   document.body.classList.add("app-locked");
-  const screen = document.getElementById("passwordScreen");
-  if (screen) screen.style.display = "flex";
+  document.querySelectorAll(".admin-only").forEach(element => { element.hidden = true; });
+  document.getElementById("passwordScreen").style.display = "flex";
 })();
 </script>
 

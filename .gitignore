@@ -2,6 +2,7 @@
 !.gitignore
 !LoFo.html
 !SUPABASE_SETUP.txt
+!SUPABASE_ROLES_SETUP.sql
 !.github/
 !.github/workflows/
 !.github/workflows/pages.yml
